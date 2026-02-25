@@ -105,7 +105,7 @@ class TestThematicLMPipeline:
 
     @pytest.fixture
     def pipeline(self) -> ThematicLMPipeline:
-        """Create a pipeline with mock embeddings and sequential execution for testing."""
+        """Create pipeline with mock embeddings and sequential mode."""
         config = PipelineConfig(
             num_coders=2,
             num_theme_coders=2,

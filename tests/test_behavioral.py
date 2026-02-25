@@ -10,8 +10,9 @@ properties described in the paper:
 Based on Issue #41: Add behavioral tests for multi-coder scenarios.
 """
 
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from thematic_lm import (
     DataSegment,
@@ -58,7 +59,9 @@ class TestMultiCoderDisagreement:
 
         # Mock responses to simulate different coding perspectives
         mock_response_1 = '{"codes": ["hope", "opportunity"], "rationales": ["a", "b"]}'
-        mock_response_2 = '{"codes": ["concern", "challenge"], "rationales": ["c", "d"]}'
+        mock_response_2 = (
+            '{"codes": ["concern", "challenge"], "rationales": ["c", "d"]}'
+        )
 
         with patch.object(coder1, "_call_llm", return_value=mock_response_1):
             result1 = coder1.code_segment("seg1", "The future looks uncertain.")
@@ -73,9 +76,7 @@ class TestMultiCoderDisagreement:
         """Test that CONSENSUS strategy filters out minority codes."""
         codebook = Codebook(use_mock_embeddings=True)
         aggregator = CodeAggregatorAgent(
-            config=AggregatorConfig(
-                negotiation_strategy=NegotiationStrategy.CONSENSUS
-            ),
+            config=AggregatorConfig(negotiation_strategy=NegotiationStrategy.CONSENSUS),
             codebook=codebook,
         )
 
@@ -101,9 +102,7 @@ class TestMultiCoderDisagreement:
         """Test that UNION strategy keeps all codes."""
         codebook = Codebook(use_mock_embeddings=True)
         aggregator = CodeAggregatorAgent(
-            config=AggregatorConfig(
-                negotiation_strategy=NegotiationStrategy.UNION
-            ),
+            config=AggregatorConfig(negotiation_strategy=NegotiationStrategy.UNION),
             codebook=codebook,
         )
 
@@ -199,7 +198,9 @@ class TestExecutionModes:
         mock_coder_response = '{"codes": ["stress"], "rationales": ["about stress"]}'
         mock_agg_response = '{"merge_groups": [], "retain_codes": ["stress"]}'
         mock_rev_response = '{"decision": "add_new"}'
-        mock_theme_response = '{"themes": [{"name": "Stress", "description": "d", "codes": ["stress"]}]}'
+        mock_theme_response = (
+            '{"themes": [{"name": "Stress", "description": "d", "codes": ["stress"]}]}'
+        )
         mock_theme_agg = '{"merge_groups": [], "retain_themes": ["Stress"]}'
 
         responses = [
@@ -326,7 +327,10 @@ class TestConfigurablePrompts:
 
         custom_prompts = CoderPrompts(
             system_prompt="Custom system: {identity_section}",
-            user_prompt="Custom user: {codebook_section} {segment_id} {segment_text} {similar_codes_section}",
+            user_prompt=(
+                "Custom user: {codebook_section} {segment_id} "
+                "{segment_text} {similar_codes_section}"
+            ),
         )
 
         config = CoderConfig(custom_prompts=custom_prompts)
@@ -346,7 +350,7 @@ class TestConfigurablePrompts:
 
         healthcare_prompts = create_domain_prompts(
             domain="healthcare",
-            additional_context="Focus on patient experience and clinical outcomes."
+            additional_context="Focus on patient experience and clinical outcomes.",
         )
 
         # Check domain context is added
