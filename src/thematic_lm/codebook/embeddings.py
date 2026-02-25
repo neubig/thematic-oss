@@ -107,3 +107,17 @@ class EmbeddingService:
 
         top_indices = np.argsort(similarities)[-top_k:][::-1]
         return [(int(idx), float(similarities[idx])) for idx in top_indices]
+
+    def compute_similarity(self, text1: str, text2: str) -> float:
+        """Compute cosine similarity between two text strings.
+
+        Args:
+            text1: First text.
+            text2: Second text.
+
+        Returns:
+            Similarity score between 0 and 1.
+        """
+        emb1 = self.embed_single(text1)
+        emb2 = self.embed_single(text2)
+        return float(self.cosine_similarity(emb1, emb2.reshape(1, -1))[0])
