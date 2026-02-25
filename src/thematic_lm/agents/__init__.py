@@ -8,6 +8,12 @@ from thematic_lm.agents.aggregator import (
 )
 from thematic_lm.agents.base import AgentConfig, BaseAgent
 from thematic_lm.agents.coder import CodeAssignment, CoderAgent, CoderConfig
+from thematic_lm.agents.reviewer import (
+    ReviewDecision,
+    ReviewerAgent,
+    ReviewerConfig,
+    ReviewResult,
+)
 
 
 __all__ = [
@@ -20,4 +26,8 @@ __all__ = [
     "AggregatorConfig",
     "AggregationResult",
     "MergedCode",
+    "ReviewerAgent",
+    "ReviewerConfig",
+    "ReviewResult",
+    "ReviewDecision",
 ]
