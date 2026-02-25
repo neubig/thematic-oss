@@ -14,6 +14,12 @@ from thematic_lm.agents.reviewer import (
     ReviewerConfig,
     ReviewResult,
 )
+from thematic_lm.agents.theme_coder import (
+    Theme,
+    ThemeCoderAgent,
+    ThemeCoderConfig,
+    ThemeResult,
+)
 
 
 __all__ = [
@@ -30,4 +36,8 @@ __all__ = [
     "ReviewerConfig",
     "ReviewResult",
     "ReviewDecision",
+    "ThemeCoderAgent",
+    "ThemeCoderConfig",
+    "Theme",
+    "ThemeResult",
 ]
