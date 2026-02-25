@@ -7,6 +7,10 @@ import pytest
 
 from thematic_lm.agents import Theme, ThemeCoderAgent, ThemeCoderConfig, ThemeResult
 from thematic_lm.codebook import Codebook, Quote
+from thematic_lm.research_context import (
+    ResearchContext,
+    create_climate_research_context,
+)
 
 
 class TestThemeCoderConfig:
@@ -402,3 +406,124 @@ class TestThemeCoderIntegration:
         themes = agent._parse_response(response)
 
         assert len(themes[0].quotes) == 5
+
+
+class TestThemeCoderAgentResearchContext:
+    """Test cases for ThemeCoderAgent with research context."""
+
+    @pytest.fixture
+    def sample_codebook(self) -> Codebook:
+        """Create a sample codebook for testing."""
+        codebook = Codebook()
+        codebook.add_code("climate anxiety", [Quote("q1", "I worry about the future")])
+        codebook.add_code("hope for change", [Quote("q2", "We can make a difference")])
+        codebook.add_code(
+            "personal responsibility", [Quote("q3", "I try to reduce my impact")]
+        )
+        return codebook
+
+    def test_initialization_with_research_context(self, sample_codebook):
+        """Test agent initialization with research context."""
+        ctx = create_climate_research_context()
+        agent = ThemeCoderAgent(codebook=sample_codebook, research_context=ctx)
+
+        assert agent.research_context is not None
+        assert "Climate" in agent.research_context.title
+
+    def test_set_research_context(self, sample_codebook):
+        """Test setting research context after initialization."""
+        agent = ThemeCoderAgent(codebook=sample_codebook)
+        assert agent.research_context is None
+
+        ctx = ResearchContext(title="Test Study", aim="To test")
+        agent.set_research_context(ctx)
+
+        assert agent.research_context is not None
+        assert agent.research_context.title == "Test Study"
+
+    def test_system_prompt_includes_research_context(self, sample_codebook):
+        """Test that system prompt includes research context."""
+        ctx = ResearchContext(
+            title="Climate Study",
+            aim="To understand climate perceptions",
+            research_questions=["How do people respond emotionally to climate change?"],
+            theoretical_framework="Ecological psychology",
+        )
+        agent = ThemeCoderAgent(codebook=sample_codebook, research_context=ctx)
+        prompt = agent.get_system_prompt()
+
+        assert "## Research Context" in prompt
+        assert "Climate Study" in prompt
+        assert "To understand climate perceptions" in prompt
+        assert "How do people respond emotionally to climate change?" in prompt
+        assert "Ecological psychology" in prompt
+
+    def test_system_prompt_without_research_context(self, sample_codebook):
+        """Test that system prompt works without research context."""
+        agent = ThemeCoderAgent(codebook=sample_codebook)
+        prompt = agent.get_system_prompt()
+
+        assert "## Research Context" not in prompt
+        assert "Theme Development Guidelines" in prompt
+
+    def test_system_prompt_with_empty_research_context(self, sample_codebook):
+        """Test that empty research context is not included."""
+        ctx = ResearchContext()  # Empty context
+        agent = ThemeCoderAgent(codebook=sample_codebook, research_context=ctx)
+        prompt = agent.get_system_prompt()
+
+        assert "## Research Context" not in prompt
+
+    def test_system_prompt_with_identity_and_research_context(self, sample_codebook):
+        """Test combining identity with research context."""
+        ctx = ResearchContext(
+            title="Environmental Study",
+            aim="To understand environmental attitudes",
+        )
+        config = ThemeCoderConfig(identity="environmental psychologist")
+        agent = ThemeCoderAgent(
+            config=config, codebook=sample_codebook, research_context=ctx
+        )
+        prompt = agent.get_system_prompt()
+
+        # Should have both sections
+        assert "## Research Context" in prompt
+        assert "Environmental Study" in prompt
+        assert "Your Perspective" in prompt
+        assert "environmental psychologist" in prompt
+
+    def test_config_has_theory_guidance_option(self):
+        """Test that config has theory guidance option."""
+        config = ThemeCoderConfig()
+        assert hasattr(config, "include_theory_guidance")
+        assert config.include_theory_guidance is True
+
+        config2 = ThemeCoderConfig(include_theory_guidance=False)
+        assert config2.include_theory_guidance is False
+
+    @patch.object(ThemeCoderAgent, "_call_llm")
+    def test_develop_themes_with_research_context(self, mock_llm, sample_codebook):
+        """Test that theme development works with research context."""
+        mock_llm.return_value = json.dumps(
+            {
+                "themes": [
+                    {
+                        "name": "Emotional Response to Climate",
+                        "description": "How people emotionally process climate change",
+                        "codes": ["climate anxiety", "hope for change"],
+                    }
+                ]
+            }
+        )
+
+        ctx = create_climate_research_context()
+        agent = ThemeCoderAgent(codebook=sample_codebook, research_context=ctx)
+        result = agent.develop_themes()
+
+        assert len(result.themes) == 1
+        assert result.themes[0].name == "Emotional Response to Climate"
+        mock_llm.assert_called_once()
+        # Verify research context was included in the call
+        call_args = mock_llm.call_args
+        system_prompt = call_args[0][0]
+        assert "Climate" in system_prompt

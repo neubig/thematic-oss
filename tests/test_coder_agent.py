@@ -7,6 +7,10 @@ import pytest
 
 from thematic_lm.agents import CodeAssignment, CoderAgent, CoderConfig
 from thematic_lm.codebook import Codebook, Quote
+from thematic_lm.research_context import (
+    ResearchContext,
+    create_climate_research_context,
+)
 
 
 class TestCoderConfig:
@@ -255,3 +259,107 @@ class TestCoderAgent:
 
         # Should not have added a new code
         assert len(agent_with_codebook.codebook) == 2
+
+
+class TestCoderAgentResearchContext:
+    """Test cases for CoderAgent with research context."""
+
+    def test_initialization_with_research_context(self):
+        """Test agent initialization with research context."""
+        ctx = create_climate_research_context()
+        agent = CoderAgent(research_context=ctx)
+
+        assert agent.research_context is not None
+        assert "Climate" in agent.research_context.title
+
+    def test_set_research_context(self):
+        """Test setting research context after initialization."""
+        agent = CoderAgent()
+        assert agent.research_context is None
+
+        ctx = ResearchContext(title="Test Study", aim="To test")
+        agent.set_research_context(ctx)
+
+        assert agent.research_context is not None
+        assert agent.research_context.title == "Test Study"
+
+    def test_system_prompt_includes_research_context(self):
+        """Test that system prompt includes research context."""
+        ctx = ResearchContext(
+            title="Climate Study",
+            aim="To understand climate perceptions",
+            research_questions=["How do people perceive climate change?"],
+            theoretical_framework="Social constructionism",
+        )
+        agent = CoderAgent(research_context=ctx)
+        prompt = agent.get_system_prompt()
+
+        assert "## Research Context" in prompt
+        assert "Climate Study" in prompt
+        assert "To understand climate perceptions" in prompt
+        assert "How do people perceive climate change?" in prompt
+        assert "Social constructionism" in prompt
+
+    def test_system_prompt_without_research_context(self):
+        """Test that system prompt works without research context."""
+        agent = CoderAgent()
+        prompt = agent.get_system_prompt()
+
+        assert "## Research Context" not in prompt
+        assert "qualitative researcher" in prompt
+
+    def test_system_prompt_with_empty_research_context(self):
+        """Test that empty research context is not included."""
+        ctx = ResearchContext()  # Empty context
+        agent = CoderAgent(research_context=ctx)
+        prompt = agent.get_system_prompt()
+
+        assert "## Research Context" not in prompt
+
+    def test_system_prompt_with_identity_and_research_context(self):
+        """Test combining identity with research context."""
+        ctx = ResearchContext(
+            title="Healthcare Study",
+            aim="To understand patient experiences",
+        )
+        config = CoderConfig(identity="patient advocate")
+        agent = CoderAgent(config=config, research_context=ctx)
+        prompt = agent.get_system_prompt()
+
+        # Should have both sections
+        assert "## Research Context" in prompt
+        assert "Healthcare Study" in prompt
+        assert "Your Perspective" in prompt
+        assert "patient advocate" in prompt
+
+    def test_config_has_6rs_guidance_option(self):
+        """Test that config has 6rs guidance option."""
+        config = CoderConfig()
+        assert hasattr(config, "include_6rs_guidance")
+        assert config.include_6rs_guidance is True
+
+        config2 = CoderConfig(include_6rs_guidance=False)
+        assert config2.include_6rs_guidance is False
+
+    @patch.object(CoderAgent, "_call_llm")
+    def test_coding_with_research_context(self, mock_llm):
+        """Test that coding works with research context."""
+        mock_llm.return_value = json.dumps(
+            {
+                "codes": ["climate anxiety", "environmental concern"],
+                "rationales": ["Expresses worry about climate", "Shows concern"],
+                "is_new": [True, True],
+            }
+        )
+
+        ctx = create_climate_research_context()
+        agent = CoderAgent(research_context=ctx)
+        result = agent.code_segment("seg1", "I worry about the future of our planet.")
+
+        assert result.segment_id == "seg1"
+        assert len(result.codes) == 2
+        mock_llm.assert_called_once()
+        # Verify research context was included in the call
+        call_args = mock_llm.call_args
+        system_prompt = call_args[0][0]
+        assert "Climate" in system_prompt

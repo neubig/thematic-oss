@@ -1,11 +1,18 @@
 """Coder agent for assigning codes to text segments."""
 
+from __future__ import annotations
+
 import json
 import re
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from thematic_lm.agents.base import AgentConfig, BaseAgent
 from thematic_lm.codebook import Codebook, Quote
+
+
+if TYPE_CHECKING:
+    from thematic_lm.research_context import ResearchContext
 
 
 @dataclass
@@ -15,6 +22,7 @@ class CoderConfig(AgentConfig):
     max_codes_per_segment: int = 5
     similarity_threshold: float = 0.7
     include_rationale: bool = True  # Chain-of-thought for better alignment
+    include_6rs_guidance: bool = True  # Include 6Rs code quality criteria
 
 
 @dataclass
@@ -83,25 +91,38 @@ class CoderAgent(BaseAgent):
     The Coder agent analyzes text and assigns codes from an existing codebook
     or creates new codes when needed. It uses semantic similarity to find
     relevant existing codes.
+
+    Supports methodology-aware coding with research context (Naeem et al. 2025).
     """
 
     def __init__(
         self,
         config: CoderConfig | None = None,
         codebook: Codebook | None = None,
+        research_context: ResearchContext | None = None,
     ):
         """Initialize the Coder agent.
 
         Args:
             config: Coder configuration.
             codebook: Initial codebook to use. Created if not provided.
+            research_context: Research context for methodology-aware coding.
         """
         super().__init__(config or CoderConfig())
         self.coder_config: CoderConfig = self.config  # type: ignore
         self.codebook = codebook or Codebook()
+        self.research_context = research_context
+
+    def set_research_context(self, context: ResearchContext) -> None:
+        """Set or update the research context.
+
+        Args:
+            context: The research context to use for coding.
+        """
+        self.research_context = context
 
     def get_system_prompt(self) -> str:
-        """Get the system prompt with optional identity."""
+        """Get the system prompt with optional identity and research context."""
         identity_section = ""
         if self.config.identity:
             identity_section = f"""
@@ -110,7 +131,22 @@ You are coding from the following perspective: {self.config.identity}
 Let this perspective inform how you interpret and code the data, while maintaining
 analytical rigor and staying grounded in the text."""
 
-        return CODER_SYSTEM_PROMPT.format(identity_section=identity_section)
+        # Add research context if available
+        research_section = ""
+        if self.research_context and not self.research_context.is_empty():
+            research_section = f"""
+## Research Context
+{self.research_context.to_prompt_section()}
+
+Use this research context to inform your coding decisions. Codes should be
+responsive to the research questions and aligned with the theoretical framework."""
+
+        prompt = CODER_SYSTEM_PROMPT.format(identity_section=identity_section)
+
+        if research_section:
+            prompt = research_section + "\n\n" + prompt
+
+        return prompt
 
     def _format_codebook_section(self) -> str:
         """Format the current codebook for the prompt."""
