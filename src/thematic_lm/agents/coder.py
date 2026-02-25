@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from thematic_lm.agents.base import AgentConfig, BaseAgent
-from thematic_lm.codebook import Codebook, Quote
+from thematic_lm.codebook import Codebook
 
 
 if TYPE_CHECKING:
@@ -259,14 +259,15 @@ responsive to the research questions and aligned with the theoretical framework.
 
         return assignment
 
-    def code_segments(
-        self, segments: list[tuple[str, str]], update_codebook: bool = True
-    ) -> list[CodeAssignment]:
+    def code_segments(self, segments: list[tuple[str, str]]) -> list[CodeAssignment]:
         """Code multiple text segments.
+
+        Note: Per the paper's architecture (Figure 2), coders produce assignments
+        which flow to the Aggregator, then Reviewer. Codebook updates should
+        happen through the ReviewerAgent, not here.
 
         Args:
             segments: List of (segment_id, text) tuples.
-            update_codebook: Whether to add new codes to the codebook.
 
         Returns:
             List of CodeAssignments.
@@ -277,46 +278,4 @@ responsive to the research questions and aligned with the theoretical framework.
             assignment = self.code_segment(segment_id, text)
             assignments.append(assignment)
 
-            if update_codebook:
-                self._update_codebook(assignment)
-
         return assignments
-
-    def _update_codebook(self, assignment: CodeAssignment) -> None:
-        """Update the codebook with new codes from an assignment.
-
-        Args:
-            assignment: The code assignment to process.
-        """
-        for i, code in enumerate(assignment.codes):
-            is_new = (
-                assignment.is_new_code[i] if i < len(assignment.is_new_code) else True
-            )
-
-            if is_new:
-                # Check if a very similar code exists
-                similar = self.codebook.find_similar_codes(code, top_k=1)
-                if similar and similar[0][1] >= 0.95:
-                    # Use existing code instead
-                    existing_entry = similar[0][0]
-                    idx = self.codebook.entries.index(existing_entry)
-                    quote = Quote(
-                        quote_id=assignment.segment_id, text=assignment.segment_text
-                    )
-                    self.codebook.add_quotes_to_code(idx, [quote])
-                else:
-                    # Add new code
-                    quote = Quote(
-                        quote_id=assignment.segment_id, text=assignment.segment_text
-                    )
-                    self.codebook.add_code(code, [quote])
-            else:
-                # Find and update existing code
-                similar = self.codebook.find_similar_codes(code, top_k=1)
-                if similar:
-                    existing_entry = similar[0][0]
-                    idx = self.codebook.entries.index(existing_entry)
-                    quote = Quote(
-                        quote_id=assignment.segment_id, text=assignment.segment_text
-                    )
-                    self.codebook.add_quotes_to_code(idx, [quote])

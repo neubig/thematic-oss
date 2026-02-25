@@ -212,53 +212,30 @@ class TestCoderAgent:
         )
 
         segments = [("seg1", "text1"), ("seg2", "text2")]
-        results = agent.code_segments(segments, update_codebook=True)
+        results = agent.code_segments(segments)
 
         assert len(results) == 2
-        # Codebook should have entries (may be deduplicated)
-        assert len(agent.codebook) >= 1
+        # Per paper architecture, coders don't update codebook directly
+        # Codebook updates flow through Aggregator -> Reviewer
+        assert len(agent.codebook) == 0
 
     @patch.object(CoderAgent, "_call_llm")
-    def test_code_segments_no_update(self, mock_llm, agent: CoderAgent):
-        """Test coding without updating codebook."""
+    def test_code_segments_does_not_update_codebook(self, mock_llm, agent: CoderAgent):
+        """Test that coding does not update codebook (per paper architecture).
+
+        Per Figure 2 of the paper, coders produce code assignments which flow
+        to the Aggregator, then the Reviewer maintains the codebook.
+        """
         mock_llm.return_value = json.dumps(
             {"codes": ["code"], "rationales": ["reason"], "is_new": [True]}
         )
 
         segments = [("seg1", "text1")]
-        agent.code_segments(segments, update_codebook=False)
+        results = agent.code_segments(segments)
 
+        # Coder produces assignments but doesn't touch codebook
+        assert len(results) == 1
         assert len(agent.codebook) == 0
-
-    def test_update_codebook_new_code(self, agent: CoderAgent):
-        """Test adding new code to codebook."""
-        assignment = CodeAssignment(
-            segment_id="seg1",
-            segment_text="sample text",
-            codes=["brand new code"],
-            rationales=["reason"],
-            is_new_code=[True],
-        )
-
-        agent._update_codebook(assignment)
-
-        assert len(agent.codebook) == 1
-        assert agent.codebook.codes[0] == "brand new code"
-
-    def test_update_codebook_existing_code(self, agent_with_codebook: CoderAgent):
-        """Test updating existing code in codebook."""
-        assignment = CodeAssignment(
-            segment_id="seg2",
-            segment_text="new quote text",
-            codes=["emotional support"],
-            rationales=["similar meaning"],
-            is_new_code=[False],
-        )
-
-        agent_with_codebook._update_codebook(assignment)
-
-        # Should not have added a new code
-        assert len(agent_with_codebook.codebook) == 2
 
 
 class TestCoderAgentResearchContext:
