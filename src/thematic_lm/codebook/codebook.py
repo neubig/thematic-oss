@@ -170,11 +170,8 @@ class Codebook:
             target.code = new_code
             target.embedding = self.embedding_service.embed_single(new_code)
 
+        # We add quotes BEFORE popping, so target_index is still valid
         self.add_quotes_to_code(target_index, source.quotes)
-
-        # Adjust target_index if source comes before it
-        if source_index < target_index:
-            target_index -= 1
         self._entries.pop(source_index)
 
     def update_code(self, index: int, new_code: str) -> None:
