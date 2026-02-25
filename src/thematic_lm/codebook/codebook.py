@@ -80,6 +80,31 @@ class Codebook:
         """Return number of codes in the codebook."""
         return len(self._entries)
 
+    def copy(self) -> "Codebook":
+        """Create a deep copy of this codebook.
+
+        Each coder should work with an independent copy to prevent shared state.
+        Per the paper: 'Each coder often works independently to generate codes.'
+
+        Returns:
+            A new Codebook instance with copied entries.
+        """
+        import copy as copy_module
+
+        new_codebook = Codebook(
+            embedding_service=self.embedding_service,
+            max_quotes_per_code=self.max_quotes_per_code,
+        )
+        # Deep copy entries to prevent shared state
+        for entry in self._entries:
+            new_entry = CodeEntry(
+                code=entry.code,
+                quotes=[Quote(q.quote_id, q.text) for q in entry.quotes],
+                embedding=copy_module.deepcopy(entry.embedding),
+            )
+            new_codebook._entries.append(new_entry)
+        return new_codebook
+
     def _get_embeddings_matrix(self) -> NDArray[np.float32] | None:
         """Get embeddings matrix from entries."""
         embeddings = [e.embedding for e in self._entries if e.embedding is not None]

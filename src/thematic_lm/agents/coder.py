@@ -12,6 +12,7 @@ from thematic_lm.codebook import Codebook
 
 
 if TYPE_CHECKING:
+    from thematic_lm.prompts import CoderPrompts
     from thematic_lm.research_context import ResearchContext
 
 
@@ -23,6 +24,7 @@ class CoderConfig(AgentConfig):
     similarity_threshold: float = 0.7
     include_rationale: bool = True  # Chain-of-thought for better alignment
     include_6rs_guidance: bool = True  # Include 6Rs code quality criteria
+    custom_prompts: CoderPrompts | None = None  # Custom prompts (Issue #38)
 
 
 @dataclass
@@ -141,12 +143,26 @@ analytical rigor and staying grounded in the text."""
 Use this research context to inform your coding decisions. Codes should be
 responsive to the research questions and aligned with the theoretical framework."""
 
-        prompt = CODER_SYSTEM_PROMPT.format(identity_section=identity_section)
+        # Use custom prompts if provided (Issue #38), otherwise use default
+        base_prompt = CODER_SYSTEM_PROMPT
+        if self.coder_config.custom_prompts is not None:
+            base_prompt = self.coder_config.custom_prompts.system_prompt
+
+        prompt = base_prompt.format(identity_section=identity_section)
 
         if research_section:
             prompt = research_section + "\n\n" + prompt
 
         return prompt
+
+    def _get_user_prompt_template(self) -> str:
+        """Get the user prompt template.
+
+        Returns custom template if configured, otherwise default.
+        """
+        if self.coder_config.custom_prompts is not None:
+            return self.coder_config.custom_prompts.user_prompt
+        return CODER_USER_PROMPT
 
     def _format_codebook_section(self) -> str:
         """Format the current codebook for the prompt."""
@@ -225,24 +241,37 @@ responsive to the research questions and aligned with the theoretical framework.
         except json.JSONDecodeError:
             return None
 
-    def code_segment(self, segment_id: str, text: str) -> CodeAssignment:
-        """Code a single text segment.
+    def _build_user_prompt(self, segment_id: str, text: str) -> str:
+        """Build the user prompt for coding a segment.
 
         Args:
             segment_id: Unique identifier for the segment.
             text: The text to code.
 
         Returns:
-            CodeAssignment with assigned codes.
+            Formatted user prompt string.
         """
-        user_prompt = CODER_USER_PROMPT.format(
+        template = self._get_user_prompt_template()
+        return template.format(
             codebook_section=self._format_codebook_section(),
             segment_id=segment_id,
             segment_text=text,
             similar_codes_section=self._format_similar_codes_section(text),
         )
 
-        response = self._call_llm(self.get_system_prompt(), user_prompt)
+    def _process_response(
+        self, response: str, segment_id: str, text: str
+    ) -> CodeAssignment:
+        """Process LLM response into a CodeAssignment.
+
+        Args:
+            response: The LLM response text.
+            segment_id: The segment ID.
+            text: The segment text.
+
+        Returns:
+            CodeAssignment with assigned codes.
+        """
         assignment = self._parse_response(response, segment_id)
 
         if assignment is None:
@@ -259,8 +288,36 @@ responsive to the research questions and aligned with the theoretical framework.
 
         return assignment
 
+    def code_segment(self, segment_id: str, text: str) -> CodeAssignment:
+        """Code a single text segment (synchronous).
+
+        Args:
+            segment_id: Unique identifier for the segment.
+            text: The text to code.
+
+        Returns:
+            CodeAssignment with assigned codes.
+        """
+        user_prompt = self._build_user_prompt(segment_id, text)
+        response = self._call_llm(self.get_system_prompt(), user_prompt)
+        return self._process_response(response, segment_id, text)
+
+    async def code_segment_async(self, segment_id: str, text: str) -> CodeAssignment:
+        """Code a single text segment (asynchronous).
+
+        Args:
+            segment_id: Unique identifier for the segment.
+            text: The text to code.
+
+        Returns:
+            CodeAssignment with assigned codes.
+        """
+        user_prompt = self._build_user_prompt(segment_id, text)
+        response = await self._call_llm_async(self.get_system_prompt(), user_prompt)
+        return self._process_response(response, segment_id, text)
+
     def code_segments(self, segments: list[tuple[str, str]]) -> list[CodeAssignment]:
-        """Code multiple text segments.
+        """Code multiple text segments (synchronous).
 
         Note: Per the paper's architecture (Figure 2), coders produce assignments
         which flow to the Aggregator, then Reviewer. Codebook updates should
@@ -272,10 +329,22 @@ responsive to the research questions and aligned with the theoretical framework.
         Returns:
             List of CodeAssignments.
         """
-        assignments = []
+        return [self.code_segment(seg_id, text) for seg_id, text in segments]
 
-        for segment_id, text in segments:
-            assignment = self.code_segment(segment_id, text)
-            assignments.append(assignment)
+    async def code_segments_async(
+        self, segments: list[tuple[str, str]]
+    ) -> list[CodeAssignment]:
+        """Code multiple text segments (asynchronous, parallel).
 
-        return assignments
+        Runs all segment coding in parallel using asyncio.gather.
+
+        Args:
+            segments: List of (segment_id, text) tuples.
+
+        Returns:
+            List of CodeAssignments.
+        """
+        import asyncio
+
+        tasks = [self.code_segment_async(seg_id, text) for seg_id, text in segments]
+        return list(await asyncio.gather(*tasks))

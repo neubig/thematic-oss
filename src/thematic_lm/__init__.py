@@ -61,6 +61,16 @@ from thematic_lm.pipeline import (
     PipelineResult,
     ThematicLMPipeline,
 )
+from thematic_lm.prompts import (
+    AggregatorPrompts,
+    CoderPrompts,
+    PromptConfig,
+    ReviewerPrompts,
+    ThemeAggregatorPrompts,
+    ThemeCoderPrompts,
+    create_domain_prompts,
+    get_prompt_config,
+)
 from thematic_lm.research_context import (
     CODE_6RS,
     CONCEPTUALIZATION_GUIDANCE,
@@ -141,4 +151,13 @@ __all__ = [
     "ReviewCheckpoint",
     "SeedInput",
     "create_seed_input",
+    # Configurable prompts (Issue #38)
+    "PromptConfig",
+    "CoderPrompts",
+    "AggregatorPrompts",
+    "ReviewerPrompts",
+    "ThemeCoderPrompts",
+    "ThemeAggregatorPrompts",
+    "get_prompt_config",
+    "create_domain_prompts",
 ]

@@ -11,6 +11,7 @@ from thematic_lm.agents import (
 )
 from thematic_lm.agents.theme_aggregator import MergedTheme
 from thematic_lm.codebook import Codebook, EmbeddingService, Quote
+from thematic_lm.pipeline import ExecutionMode
 
 
 class TestPipelineConfig:
@@ -104,11 +105,12 @@ class TestThematicLMPipeline:
 
     @pytest.fixture
     def pipeline(self) -> ThematicLMPipeline:
-        """Create a pipeline with mock embeddings."""
+        """Create pipeline with mock embeddings and sequential mode."""
         config = PipelineConfig(
             num_coders=2,
             num_theme_coders=2,
             use_mock_embeddings=True,
+            execution_mode=ExecutionMode.SEQUENTIAL,  # Use sequential for mocked tests
         )
         return ThematicLMPipeline(config=config)
 
@@ -378,6 +380,7 @@ class TestThematicLMPipeline:
             num_coders=1,
             batch_size=2,
             use_mock_embeddings=True,
+            execution_mode=ExecutionMode.SEQUENTIAL,  # Use sequential for mocking
         )
         pipeline = ThematicLMPipeline(config=config)
 
@@ -417,6 +420,7 @@ class TestPipelineIntegration:
             num_coders=1,
             num_theme_coders=1,
             use_mock_embeddings=True,
+            execution_mode=ExecutionMode.SEQUENTIAL,  # Use sequential for mocking
         )
         pipeline = ThematicLMPipeline(config=config)
 
@@ -486,6 +490,7 @@ class TestPipelineIntegration:
             num_coders=1,
             num_theme_coders=1,
             use_mock_embeddings=True,
+            execution_mode=ExecutionMode.SEQUENTIAL,  # Use sequential for mocking
         )
         pipeline = ThematicLMPipeline(config=config)
 
