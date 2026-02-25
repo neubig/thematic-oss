@@ -23,6 +23,18 @@ from thematic_lm.pipeline import (
     PipelineResult,
     ThematicLMPipeline,
 )
+from thematic_lm.research_context import (
+    CODE_6RS,
+    CONCEPTUALIZATION_GUIDANCE,
+    KEYWORD_6RS,
+    THEME_DEVELOPMENT_GUIDANCE,
+    ResearchContext,
+    ResearchParadigm,
+    TheoreticalFramework,
+    create_climate_research_context,
+    create_healthcare_research_context,
+    create_methodology_prompt,
+)
 
 
 __version__ = "0.1.0"
@@ -45,4 +57,15 @@ __all__ = [
     "PROGRESSIVE_VIEW",
     "CONSERVATIVE_VIEW",
     "INDIGENOUS_VIEW",
+    # Research context (Naeem et al. 2025)
+    "ResearchContext",
+    "ResearchParadigm",
+    "TheoreticalFramework",
+    "create_methodology_prompt",
+    "create_climate_research_context",
+    "create_healthcare_research_context",
+    "KEYWORD_6RS",
+    "CODE_6RS",
+    "THEME_DEVELOPMENT_GUIDANCE",
+    "CONCEPTUALIZATION_GUIDANCE",
 ]

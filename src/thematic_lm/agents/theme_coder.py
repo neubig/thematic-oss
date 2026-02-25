@@ -1,11 +1,18 @@
 """Theme Coder agent for developing themes from the codebook."""
 
+from __future__ import annotations
+
 import json
 import re
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from thematic_lm.agents.base import AgentConfig, BaseAgent
 from thematic_lm.codebook import Codebook, Quote
+
+
+if TYPE_CHECKING:
+    from thematic_lm.research_context import ResearchContext
 
 
 @dataclass
@@ -15,6 +22,7 @@ class ThemeCoderConfig(AgentConfig):
     max_themes: int = 10
     max_quotes_per_theme: int = 10
     min_codes_per_theme: int = 2  # Minimum codes to form a theme
+    include_theory_guidance: bool = True  # Include theory-aligned theme development
 
 
 @dataclass
@@ -118,25 +126,38 @@ class ThemeCoderAgent(BaseAgent):
 
     The Theme Coder analyzes codes and their associated quotes holistically
     to identify overarching themes that reflect deeper insights into the data.
+
+    Supports theory-aligned theme development with research context (Naeem et al. 2025).
     """
 
     def __init__(
         self,
         config: ThemeCoderConfig | None = None,
         codebook: Codebook | None = None,
+        research_context: ResearchContext | None = None,
     ):
         """Initialize the Theme Coder agent.
 
         Args:
             config: Theme coder configuration.
             codebook: The codebook to analyze.
+            research_context: Research context for theory-aligned themes.
         """
         super().__init__(config or ThemeCoderConfig())
         self.theme_config: ThemeCoderConfig = self.config  # type: ignore
         self.codebook = codebook or Codebook()
+        self.research_context = research_context
+
+    def set_research_context(self, context: ResearchContext) -> None:
+        """Set or update the research context.
+
+        Args:
+            context: The research context to use for theme development.
+        """
+        self.research_context = context
 
     def get_system_prompt(self) -> str:
-        """Get the system prompt with optional identity."""
+        """Get the system prompt with optional identity and research context."""
         identity_section = ""
         if self.config.identity:
             identity_section = f"""
@@ -145,7 +166,23 @@ You are analyzing from the following perspective: {self.config.identity}
 Let this perspective inform how you interpret patterns and develop themes,
 while staying grounded in the data."""
 
-        return THEME_CODER_SYSTEM_PROMPT.format(identity_section=identity_section)
+        # Add research context for theory-aligned theme development
+        research_section = ""
+        if self.research_context and not self.research_context.is_empty():
+            research_section = f"""
+## Research Context
+{self.research_context.to_prompt_section()}
+
+Develop themes that address the research questions and align with the theoretical
+framework. Themes should tell a coherent story that advances understanding of the
+research topic."""
+
+        prompt = THEME_CODER_SYSTEM_PROMPT.format(identity_section=identity_section)
+
+        if research_section:
+            prompt = research_section + "\n\n" + prompt
+
+        return prompt
 
     def _format_codes_section(self) -> str:
         """Format codes and quotes for the prompt."""
