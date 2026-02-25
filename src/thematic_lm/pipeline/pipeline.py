@@ -63,23 +63,18 @@ class PipelineResult:
 
     themes: ThemeAggregationResult
     codebook: Codebook
-    stage1_aggregation: AggregationResult | None = None
+    stage1_aggregations: list[AggregationResult] = field(default_factory=list)
 
     def to_json(self) -> str:
         """Convert result to JSON format."""
-        return json.dumps(
-            {
-                "themes": self.themes.to_dict(),
-                "codebook": self.codebook.to_dict(),
-            },
-            indent=2,
-        )
+        return json.dumps(self.to_dict(), indent=2)
 
     def to_dict(self) -> dict:
         """Convert result to dictionary format."""
         return {
             "themes": self.themes.to_dict(),
             "codebook": self.codebook.to_dict(),
+            "stage1_aggregations": [a.to_dict() for a in self.stage1_aggregations],
         }
 
 
@@ -109,10 +104,9 @@ class ThematicLMPipeline:
             use_mock=self.config.use_mock_embeddings
         )
 
-        # Initialize codebook
+        # Initialize codebook (max_quotes_per_code defaults to reasonable value)
         self.codebook = Codebook(
             embedding_service=self.embedding_service,
-            max_quotes_per_code=self.config.coder_config.max_codes_per_segment,
         )
 
         # Initialize Stage 1 agents
@@ -183,18 +177,6 @@ class ThematicLMPipeline:
             config=self.config.theme_aggregator_config,
             embedding_service=self.embedding_service,
         )
-
-    def _generate_quote_id(self, segment_id: str, index: int = 0) -> str:
-        """Generate a unique quote ID.
-
-        Args:
-            segment_id: ID of the data segment.
-            index: Index within the segment.
-
-        Returns:
-            Unique quote ID.
-        """
-        return f"{segment_id}_{index}"
 
     def _process_batch_stage1(
         self, segments: list[DataSegment]
@@ -309,7 +291,7 @@ class ThematicLMPipeline:
         return PipelineResult(
             themes=themes,
             codebook=codebook,
-            stage1_aggregation=aggregations[0] if aggregations else None,
+            stage1_aggregations=aggregations,
         )
 
     def run_from_texts(self, texts: list[str]) -> PipelineResult:

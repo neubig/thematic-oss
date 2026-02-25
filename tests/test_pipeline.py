@@ -87,6 +87,7 @@ class TestPipelineResult:
 
         assert "themes" in data
         assert "codebook" in data
+        assert "stage1_aggregations" in data
         assert len(data["themes"]["themes"]) == 1
 
     def test_to_dict(self, sample_result: PipelineResult):
@@ -95,6 +96,7 @@ class TestPipelineResult:
 
         assert "themes" in data
         assert "codebook" in data
+        assert "stage1_aggregations" in data
 
 
 class TestThematicLMPipeline:
@@ -173,14 +175,6 @@ class TestThematicLMPipeline:
 
         assert pipeline._theme_coders[0].config.identity == "Theorist"
         assert pipeline._theme_coders[1].config.identity == "Practitioner"
-
-    def test_generate_quote_id(self, pipeline: ThematicLMPipeline):
-        """Test quote ID generation."""
-        quote_id = pipeline._generate_quote_id("seg_001")
-        assert quote_id == "seg_001_0"
-
-        quote_id = pipeline._generate_quote_id("seg_001", 5)
-        assert quote_id == "seg_001_5"
 
     def test_coders_property_lazy_init(self, pipeline: ThematicLMPipeline):
         """Test that coders property lazily initializes agents."""
