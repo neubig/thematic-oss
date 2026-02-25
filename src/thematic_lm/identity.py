@@ -142,10 +142,4 @@ def get_diverse_identities() -> list[IdentityPerspective]:
     Returns:
         List of the five predefined identity perspectives.
     """
-    return [
-        HUMAN_DRIVEN_CLIMATE,
-        NATURAL_CLIMATE,
-        PROGRESSIVE_VIEW,
-        CONSERVATIVE_VIEW,
-        INDIGENOUS_VIEW,
-    ]
+    return list(PREDEFINED_IDENTITIES.values())
