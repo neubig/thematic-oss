@@ -2,6 +2,10 @@
 
 from thematic_lm.pipeline.pipeline import (
     DataSegment,
+    EvaluationConfig,
+    EvaluationResult,
+    ExecutionMode,
+    HITLCheckpoint,
     PipelineConfig,
     PipelineResult,
     ThematicLMPipeline,
@@ -13,4 +17,8 @@ __all__ = [
     "PipelineConfig",
     "PipelineResult",
     "DataSegment",
+    "ExecutionMode",
+    "EvaluationConfig",
+    "EvaluationResult",
+    "HITLCheckpoint",
 ]

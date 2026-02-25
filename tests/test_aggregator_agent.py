@@ -287,7 +287,7 @@ class TestCodeAggregatorAgent:
         agent: CodeAggregatorAgent,
         sample_assignments: list[CodeAssignment],
     ):
-        """Test aggregating codes."""
+        """Test aggregating codes with negotiation disabled."""
         mock_llm.return_value = json.dumps(
             {
                 "merge_groups": [
@@ -301,11 +301,42 @@ class TestCodeAggregatorAgent:
             }
         )
 
-        result = agent.aggregate(sample_assignments)
+        # Disable negotiation to test raw aggregation behavior
+        result = agent.aggregate(sample_assignments, apply_negotiation=False)
 
         assert len(result.merged_codes) == 1
         assert result.merged_codes[0].code == "peer support system"
         assert len(result.retained_codes) == 2
+        mock_llm.assert_called_once()
+
+    @patch.object(CodeAggregatorAgent, "_call_llm")
+    def test_aggregate_with_negotiation(
+        self,
+        mock_llm,
+        agent: CodeAggregatorAgent,
+        sample_assignments: list[CodeAssignment],
+    ):
+        """Test aggregating codes with negotiation strategy (default CONSENSUS).
+
+        With CONSENSUS strategy, only codes agreed by majority are included.
+        - 'peer support' appears in 2/3 assignments → included
+        - 'emotional comfort' appears in 1/3 assignments → excluded
+        - 'academic help' appears in 1/3 assignments → excluded
+        - 'time pressure' appears in 1/3 assignments → excluded
+        """
+        mock_llm.return_value = json.dumps(
+            {
+                "merge_groups": [],
+                "retain_codes": ["peer support"],  # Only agreed code
+            }
+        )
+
+        result = agent.aggregate(sample_assignments, apply_negotiation=True)
+
+        # With consensus, only 'peer support' passes (2/3 agreement)
+        assert len(result.merged_codes) == 0
+        assert len(result.retained_codes) == 1
+        assert result.retained_codes[0].code == "peer support"
         mock_llm.assert_called_once()
 
     @patch.object(CodeAggregatorAgent, "_call_llm")

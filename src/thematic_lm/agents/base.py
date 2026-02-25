@@ -1,5 +1,6 @@
 """Base agent class for all thematic analysis agents."""
 
+import asyncio
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -20,7 +21,7 @@ class BaseAgent(ABC):
     """Base class for all thematic analysis agents.
 
     Provides common functionality for LLM-based agents including
-    client management and message handling.
+    client management and message handling. Supports both sync and async calls.
     """
 
     def __init__(self, config: AgentConfig | None = None):
@@ -58,8 +59,23 @@ class BaseAgent(ABC):
             Message(role="user", content=[TextContent(text=user_prompt)]),
         ]
 
+    def _extract_text(self, response) -> str:
+        """Extract text content from LLM response.
+
+        Args:
+            response: The LLM response object.
+
+        Returns:
+            Extracted text content.
+        """
+        content_parts = []
+        for part in response.message.content:
+            if isinstance(part, TextContent):
+                content_parts.append(part.text)
+        return "".join(content_parts)
+
     def _call_llm(self, system_prompt: str, user_prompt: str) -> str:
-        """Call the LLM with the given prompts.
+        """Call the LLM with the given prompts (synchronous).
 
         Args:
             system_prompt: The system prompt with instructions.
@@ -70,13 +86,25 @@ class BaseAgent(ABC):
         """
         messages = self._create_messages(system_prompt, user_prompt)
         response = self.llm.completion(messages=messages)
+        return self._extract_text(response)
 
-        # Extract text from response message content
-        content_parts = []
-        for part in response.message.content:
-            if isinstance(part, TextContent):
-                content_parts.append(part.text)
-        return "".join(content_parts)
+    async def _call_llm_async(self, system_prompt: str, user_prompt: str) -> str:
+        """Call the LLM with the given prompts (asynchronous).
+
+        Args:
+            system_prompt: The system prompt with instructions.
+            user_prompt: The user prompt with the task.
+
+        Returns:
+            The LLM response text.
+        """
+        messages = self._create_messages(system_prompt, user_prompt)
+        # Run sync completion in thread pool for async compatibility
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            None, lambda: self.llm.completion(messages=messages)
+        )
+        return self._extract_text(response)
 
     @abstractmethod
     def get_system_prompt(self) -> str:

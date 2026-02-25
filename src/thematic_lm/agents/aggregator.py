@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from thematic_lm.agents.base import AgentConfig, BaseAgent
 from thematic_lm.agents.coder import CodeAssignment
 from thematic_lm.codebook import Codebook, Quote
+from thematic_lm.iterative import NegotiationStrategy, negotiate
 
 
 @dataclass
@@ -15,6 +16,8 @@ class AggregatorConfig(AgentConfig):
 
     similarity_threshold: float = 0.8
     max_quotes_per_code: int = 10
+    negotiation_strategy: NegotiationStrategy = NegotiationStrategy.CONSENSUS
+    consensus_threshold: float = 0.5  # Fraction of coders needed for consensus
 
 
 @dataclass
@@ -146,13 +149,43 @@ class CodeAggregatorAgent(BaseAgent):
         """Get the system prompt for aggregation."""
         return AGGREGATOR_SYSTEM_PROMPT
 
-    def _collect_codes_with_quotes(
+    def _apply_negotiation_strategy(
         self, assignments: list[CodeAssignment]
-    ) -> dict[str, list[Quote]]:
-        """Collect all codes with their associated quotes.
+    ) -> set[str]:
+        """Apply negotiation strategy to filter codes based on coder agreement.
+
+        This integrates the NegotiationStrategy from iterative.py module.
+        Per the paper: codes should be agreed upon by coders before aggregation.
 
         Args:
             assignments: List of code assignments from coders.
+
+        Returns:
+            Set of codes that pass the negotiation strategy filter.
+        """
+        # Build code sets per coder
+        code_sets = [set(a.codes) for a in assignments]
+
+        if not code_sets:
+            return set()
+
+        # Use the negotiate function from iterative module
+        result = negotiate(
+            code_sets=code_sets,
+            strategy=self.aggregator_config.negotiation_strategy,
+        )
+
+        return set(result.agreed_codes)
+
+    def _collect_codes_with_quotes(
+        self, assignments: list[CodeAssignment], agreed_codes: set[str] | None = None
+    ) -> dict[str, list[Quote]]:
+        """Collect codes with their associated quotes.
+
+        Args:
+            assignments: List of code assignments from coders.
+            agreed_codes: Optional set of codes that passed negotiation.
+                         If None, all codes are included.
 
         Returns:
             Dict mapping code labels to lists of quotes.
@@ -161,6 +194,10 @@ class CodeAggregatorAgent(BaseAgent):
 
         for assignment in assignments:
             for code in assignment.codes:
+                # Filter by agreed codes if negotiation was applied
+                if agreed_codes is not None and code not in agreed_codes:
+                    continue
+
                 if code not in code_quotes:
                     code_quotes[code] = []
                 quote = Quote(
@@ -311,34 +348,49 @@ class CodeAggregatorAgent(BaseAgent):
         except json.JSONDecodeError:
             return None
 
-    def aggregate(self, assignments: list[CodeAssignment]) -> AggregationResult:
+    def aggregate(
+        self,
+        assignments: list[CodeAssignment],
+        apply_negotiation: bool = True,
+    ) -> AggregationResult:
         """Aggregate codes from multiple coder assignments.
+
+        First applies NegotiationStrategy to filter codes by coder agreement,
+        then merges semantically similar codes using LLM.
 
         Args:
             assignments: List of code assignments from coder agents.
+            apply_negotiation: Whether to apply negotiation strategy first.
+                             Set to False for backward compatibility.
 
         Returns:
             AggregationResult with merged and retained codes.
         """
-        # Collect all codes with their quotes
-        code_quotes = self._collect_codes_with_quotes(assignments)
+        # Step 1: Apply negotiation strategy to filter codes
+        agreed_codes = None
+        if apply_negotiation and len(assignments) > 1:
+            agreed_codes = self._apply_negotiation_strategy(assignments)
+            # If negotiation yields no codes (e.g., INTERSECTION with no overlap),
+            # fall back to UNION to avoid empty results
+            if not agreed_codes:
+                agreed_codes = None  # Include all codes
+
+        # Step 2: Collect codes with their quotes (filtered by negotiation)
+        code_quotes = self._collect_codes_with_quotes(assignments, agreed_codes)
 
         if not code_quotes:
             return AggregationResult(merged_codes=[], retained_codes=[])
 
-        # Find similar code groups
+        # Step 3: Find similar code groups using embeddings
         similar_groups = self._find_similar_groups(list(code_quotes.keys()))
 
-        # Build prompt
+        # Step 4: Use LLM to decide on merging
         user_prompt = AGGREGATOR_USER_PROMPT.format(
             codes_section=self._format_codes_section(code_quotes),
             similar_groups_section=self._format_similar_groups_section(similar_groups),
         )
 
-        # Call LLM
         response = self._call_llm(self.get_system_prompt(), user_prompt)
-
-        # Parse response
         result = self._parse_response(response, code_quotes)
 
         if result is None:
