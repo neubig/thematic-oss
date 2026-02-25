@@ -34,34 +34,35 @@ class AggregationResult:
     merged_codes: list[MergedCode]
     retained_codes: list[MergedCode]  # Codes kept separate (different concepts)
 
+    def to_dict(self) -> dict:
+        """Convert to dictionary format."""
+        return {
+            "merged_codes": [
+                {
+                    "code": mc.code,
+                    "original_codes": mc.original_codes,
+                    "quotes": [
+                        {"quote_id": q.quote_id, "text": q.text} for q in mc.quotes
+                    ],
+                    "merge_rationale": mc.merge_rationale,
+                }
+                for mc in self.merged_codes
+            ],
+            "retained_codes": [
+                {
+                    "code": rc.code,
+                    "original_codes": rc.original_codes,
+                    "quotes": [
+                        {"quote_id": q.quote_id, "text": q.text} for q in rc.quotes
+                    ],
+                }
+                for rc in self.retained_codes
+            ],
+        }
+
     def to_json(self) -> str:
         """Convert to structured JSON format."""
-        return json.dumps(
-            {
-                "merged_codes": [
-                    {
-                        "code": mc.code,
-                        "original_codes": mc.original_codes,
-                        "quotes": [
-                            {"quote_id": q.quote_id, "text": q.text} for q in mc.quotes
-                        ],
-                        "merge_rationale": mc.merge_rationale,
-                    }
-                    for mc in self.merged_codes
-                ],
-                "retained_codes": [
-                    {
-                        "code": rc.code,
-                        "original_codes": rc.original_codes,
-                        "quotes": [
-                            {"quote_id": q.quote_id, "text": q.text} for q in rc.quotes
-                        ],
-                    }
-                    for rc in self.retained_codes
-                ],
-            },
-            indent=2,
-        )
+        return json.dumps(self.to_dict(), indent=2)
 
     def all_codes(self) -> list[MergedCode]:
         """Return all codes (merged and retained)."""
