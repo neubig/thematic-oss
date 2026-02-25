@@ -10,12 +10,16 @@ Based on Section 3.1 of the Thematic-LM paper (WWW '25).
 import json
 from dataclasses import dataclass, field
 
-from openhands.sdk import LLM, Message, TextContent
+from thematic_lm.agents.base import AgentConfig, BaseAgent
 
 
 @dataclass
-class CredibilityConfig:
-    """Configuration for the credibility evaluator."""
+class CredibilityConfig(AgentConfig):
+    """Configuration for the credibility evaluator.
+
+    Inherits from AgentConfig but uses different defaults suitable
+    for evaluation tasks (lower temperature for more consistent judgments).
+    """
 
     model: str = "gpt-4o-mini"
     temperature: float = 0.0
@@ -128,11 +132,12 @@ Respond in JSON format:
 """
 
 
-class EvaluatorAgent:
+class EvaluatorAgent(BaseAgent):
     """LLM-as-judge evaluator for credibility and confirmability.
 
     Assesses whether themes accurately represent the data and are data-driven
-    rather than driven by biases or hallucinations.
+    rather than driven by biases or hallucinations. Inherits LLM handling from
+    BaseAgent.
     """
 
     def __init__(self, config: CredibilityConfig | None = None):
@@ -141,37 +146,11 @@ class EvaluatorAgent:
         Args:
             config: Evaluator configuration.
         """
-        self.config = config or CredibilityConfig()
-        self._llm: LLM | None = None
+        super().__init__(config or CredibilityConfig())
 
-    @property
-    def llm(self) -> LLM:
-        """Lazy load the LLM instance."""
-        if self._llm is None:
-            self._llm = LLM(
-                model=self.config.model,
-                temperature=self.config.temperature,
-                max_output_tokens=self.config.max_tokens,
-            )
-        return self._llm
-
-    def _create_messages(self, system_prompt: str, user_prompt: str) -> list[Message]:
-        """Create message list for LLM call."""
-        return [
-            Message(role="system", content=[TextContent(text=system_prompt)]),
-            Message(role="user", content=[TextContent(text=user_prompt)]),
-        ]
-
-    def _call_llm(self, system_prompt: str, user_prompt: str) -> str:
-        """Call the LLM with the given prompts."""
-        messages = self._create_messages(system_prompt, user_prompt)
-        response = self.llm.completion(messages=messages)
-
-        content_parts = []
-        for part in response.message.content:
-            if isinstance(part, TextContent):
-                content_parts.append(part.text)
-        return "".join(content_parts)
+    def get_system_prompt(self) -> str:
+        """Get the system prompt for evaluation."""
+        return EVALUATOR_SYSTEM_PROMPT
 
     def _build_prompt(self, theme_name: str, theme_desc: str, quote: str) -> str:
         """Build evaluation prompt for a quote-theme pair.
