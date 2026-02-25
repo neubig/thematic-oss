@@ -33,6 +33,16 @@ from thematic_lm.identity import (
     get_identity,
     list_identities,
 )
+from thematic_lm.persona import (
+    ContextDocument,
+    ContextType,
+    PersonaContext,
+    PersonaGenerator,
+    create_domain_expert_persona,
+    create_persona_from_documents,
+    load_document_from_file,
+    load_document_from_text,
+)
 from thematic_lm.pipeline import (
     DataSegment,
     PipelineConfig,
@@ -99,4 +109,13 @@ __all__ = [
     "CHAIN_OF_THOUGHT_TEMPLATE",
     "RATIONALE_TEMPLATE",
     "ONE_CODE_PER_PROMPT_TEMPLATE",
+    # Enhanced persona system
+    "ContextDocument",
+    "ContextType",
+    "PersonaContext",
+    "PersonaGenerator",
+    "create_persona_from_documents",
+    "create_domain_expert_persona",
+    "load_document_from_text",
+    "load_document_from_file",
 ]
