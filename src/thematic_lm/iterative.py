@@ -311,22 +311,16 @@ def negotiate_confidence(
 
     # If no confidences provided, treat all equally
     if confidences is None:
-        confidences = [
-            {code: 1.0 for code in code_set} for code_set in code_sets
-        ]
+        confidences = [{code: 1.0 for code in code_set} for code_set in code_sets]
 
     # Average confidence per code
     code_confidence: dict[str, float] = {}
     for code in all_codes:
-        scores = [
-            conf.get(code, 0.0) for conf in confidences if code in conf
-        ]
+        scores = [conf.get(code, 0.0) for conf in confidences if code in conf]
         code_confidence[code] = sum(scores) / len(scores) if scores else 0.0
 
     # Sort by confidence
-    sorted_codes = sorted(
-        code_confidence.items(), key=lambda x: x[1], reverse=True
-    )
+    sorted_codes = sorted(code_confidence.items(), key=lambda x: x[1], reverse=True)
 
     agreed = [code for code, conf in sorted_codes if conf >= 0.5]
     disputed = [code for code, conf in sorted_codes if conf < 0.5]
@@ -617,9 +611,7 @@ class IterativePipelineController:
         Returns:
             True if should stop.
         """
-        if self.state.check_early_stop(
-            quality_score, self.config.early_stop_threshold
-        ):
+        if self.state.check_early_stop(quality_score, self.config.early_stop_threshold):
             return True
 
         if self.state.check_max_iterations(self.config.max_iterations):
@@ -648,9 +640,8 @@ class IterativePipelineController:
         total_merged = sum(m.codes_merged for m in self.state.metrics_history)
         total_rejected = sum(m.codes_rejected for m in self.state.metrics_history)
 
-        avg_agreement = (
-            sum(m.agreement_rate for m in self.state.metrics_history)
-            / len(self.state.metrics_history)
+        avg_agreement = sum(m.agreement_rate for m in self.state.metrics_history) / len(
+            self.state.metrics_history
         )
 
         return {

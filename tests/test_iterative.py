@@ -525,9 +525,7 @@ class TestIterativePipelineController:
 
     def test_negotiate_codes(self):
         """Test code negotiation through controller."""
-        config = IterativePipelineConfig(
-            negotiation_strategy=NegotiationStrategy.UNION
-        )
+        config = IterativePipelineConfig(negotiation_strategy=NegotiationStrategy.UNION)
         controller = IterativePipelineController(config=config)
 
         code_sets = [{"a", "b"}, {"c"}]
