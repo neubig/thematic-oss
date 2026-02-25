@@ -63,8 +63,8 @@ class TestCodebook:
 
     @pytest.fixture
     def codebook(self) -> Codebook:
-        """Create a codebook for tests."""
-        return Codebook(max_quotes_per_code=5)
+        """Create a codebook with mock embeddings for fast tests."""
+        return Codebook(max_quotes_per_code=5, use_mock_embeddings=True)
 
     def test_empty_codebook(self, codebook: Codebook):
         """Test empty codebook properties."""
@@ -109,17 +109,19 @@ class TestCodebook:
             codebook.add_quotes_to_code(0, [Quote("q1", "text")])
 
     def test_find_similar_codes(self, codebook: Codebook):
-        """Test finding similar codes."""
+        """Test finding similar codes returns top k results."""
         codebook.add_code("climate change impacts", [Quote("q1", "t1")])
         codebook.add_code("global warming effects", [Quote("q2", "t2")])
         codebook.add_code("ice cream flavors", [Quote("q3", "t3")])
 
-        results = codebook.find_similar_codes("environmental climate effects", top_k=2)
+        results = codebook.find_similar_codes("any query", top_k=2)
 
+        # With mock embeddings we can only test structural behavior
         assert len(results) == 2
-        # Climate-related codes should be more similar
-        codes = [r[0].code for r in results]
-        assert "ice cream flavors" not in codes
+        assert all(isinstance(r[0], CodeEntry) for r in results)
+        assert all(isinstance(r[1], float) for r in results)
+        # Results should be sorted by similarity descending
+        assert results[0][1] >= results[1][1]
 
     def test_find_similar_codes_empty_codebook(self, codebook: Codebook):
         """Test finding similar codes in empty codebook."""
@@ -175,7 +177,7 @@ class TestCodebook:
         codebook.add_code("code2", [Quote("q2", "text2")])
 
         json_str = codebook.to_json()
-        restored = Codebook.from_json(json_str)
+        restored = Codebook.from_json(json_str, use_mock_embeddings=True)
 
         assert len(restored) == 2
         assert restored.codes == ["code1", "code2"]
@@ -199,7 +201,7 @@ class TestCodebook:
 
         try:
             codebook.save(path)
-            loaded = Codebook.load(path)
+            loaded = Codebook.load(path, use_mock_embeddings=True)
 
             assert len(loaded) == 1
             assert loaded.codes == ["test code"]
@@ -220,7 +222,29 @@ class TestCodebook:
             ]
         }
 
-        codebook = Codebook.from_json(json.dumps(json_data))
+        codebook = Codebook.from_json(json.dumps(json_data), use_mock_embeddings=True)
 
         assert len(codebook.entries[0].quotes) == 2
         assert codebook.entries[0].quotes[0].text == "first quote"
+
+
+@pytest.mark.integration
+class TestCodebookIntegration:
+    """Integration tests requiring real Sentence Transformer embeddings."""
+
+    @pytest.fixture
+    def codebook(self) -> Codebook:
+        """Create a codebook with real embeddings."""
+        return Codebook(max_quotes_per_code=5, use_mock_embeddings=False)
+
+    def test_semantic_similarity(self, codebook: Codebook):
+        """Test that semantically similar codes are found together."""
+        codebook.add_code("climate change impacts", [Quote("q1", "t1")])
+        codebook.add_code("global warming effects", [Quote("q2", "t2")])
+        codebook.add_code("ice cream flavors", [Quote("q3", "t3")])
+
+        results = codebook.find_similar_codes("environmental climate effects", top_k=2)
+
+        # Climate-related codes should be more similar
+        codes = [r[0].code for r in results]
+        assert "ice cream flavors" not in codes

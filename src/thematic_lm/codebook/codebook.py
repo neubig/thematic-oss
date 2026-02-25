@@ -51,14 +51,18 @@ class Codebook:
         self,
         embedding_service: EmbeddingService | None = None,
         max_quotes_per_code: int = 20,
+        use_mock_embeddings: bool = False,
     ):
         """Initialize the codebook.
 
         Args:
             embedding_service: Service for generating embeddings.
             max_quotes_per_code: Maximum quotes to keep per code.
+            use_mock_embeddings: If True, use mock embeddings (fast, for testing).
         """
-        self.embedding_service = embedding_service or EmbeddingService()
+        self.embedding_service = embedding_service or EmbeddingService(
+            use_mock=use_mock_embeddings
+        )
         self.max_quotes_per_code = max_quotes_per_code
         self._entries: list[CodeEntry] = []
 
@@ -202,11 +206,14 @@ class Codebook:
         json_str: str,
         embedding_service: EmbeddingService | None = None,
         max_quotes_per_code: int = 20,
+        use_mock_embeddings: bool = False,
     ) -> "Codebook":
         """Deserialize codebook from JSON string."""
         data = json.loads(json_str)
         codebook = cls(
-            embedding_service=embedding_service, max_quotes_per_code=max_quotes_per_code
+            embedding_service=embedding_service,
+            max_quotes_per_code=max_quotes_per_code,
+            use_mock_embeddings=use_mock_embeddings,
         )
 
         for code_data in data.get("codes", []):
@@ -226,10 +233,12 @@ class Codebook:
         path: str | Path,
         embedding_service: EmbeddingService | None = None,
         max_quotes_per_code: int = 20,
+        use_mock_embeddings: bool = False,
     ) -> "Codebook":
         """Load codebook from a JSON file."""
         return cls.from_json(
             Path(path).read_text(),
             embedding_service=embedding_service,
             max_quotes_per_code=max_quotes_per_code,
+            use_mock_embeddings=use_mock_embeddings,
         )
