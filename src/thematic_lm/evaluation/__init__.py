@@ -20,6 +20,12 @@ from thematic_lm.evaluation.dependability import (
     rouge_n,
     rouge_n_directional,
 )
+from thematic_lm.evaluation.transferability import (
+    TransferabilityEvaluator,
+    TransferabilityResult,
+    split_dataset,
+    split_dataset_stratified,
+)
 
 
 __all__ = [
@@ -36,4 +42,9 @@ __all__ = [
     "rouge_n",
     "rouge_n_directional",
     "rouge_combined",
+    # Transferability
+    "TransferabilityEvaluator",
+    "TransferabilityResult",
+    "split_dataset",
+    "split_dataset_stratified",
 ]
