@@ -89,14 +89,12 @@ class ResearchContext:
 
         if self.research_questions:
             rq_list = "\n".join(
-                f"{i+1}. {q}" for i, q in enumerate(self.research_questions)
+                f"{i + 1}. {q}" for i, q in enumerate(self.research_questions)
             )
             sections.append(f"### Research Questions\n{rq_list}")
 
         if self.theoretical_framework:
-            sections.append(
-                f"### Theoretical Framework\n{self.theoretical_framework}"
-            )
+            sections.append(f"### Theoretical Framework\n{self.theoretical_framework}")
 
         if self.paradigm:
             sections.append(f"### Research Paradigm\n{self.paradigm}")
@@ -115,16 +113,18 @@ class ResearchContext:
 
     def is_empty(self) -> bool:
         """Check if the context is essentially empty."""
-        return not any([
-            self.title,
-            self.aim,
-            self.research_questions,
-            self.theoretical_framework,
-            self.paradigm,
-            self.domain,
-            self.background,
-            self.keywords,
-        ])
+        return not any(
+            [
+                self.title,
+                self.aim,
+                self.research_questions,
+                self.theoretical_framework,
+                self.paradigm,
+                self.domain,
+                self.background,
+                self.keywords,
+            ]
+        )
 
 
 # The 6 Rs Framework for Keyword and Code Selection (Naeem et al. 2025)
@@ -252,6 +252,7 @@ def create_methodology_prompt(
 
 # Predefined research contexts for common domains
 
+
 def create_climate_research_context(
     research_questions: list[str] | None = None,
 ) -> ResearchContext:
@@ -270,7 +271,8 @@ def create_climate_research_context(
             "responses to climate change and their implications for "
             "climate communication and policy"
         ),
-        research_questions=research_questions or [
+        research_questions=research_questions
+        or [
             "How do people perceive and make sense of climate change?",
             "What emotional responses does climate change evoke?",
             "How do perceptions vary across different demographic groups?",
@@ -321,7 +323,8 @@ def create_healthcare_research_context(
             "To understand patient experiences, perspectives, and needs "
             "in healthcare settings to inform patient-centered care"
         ),
-        research_questions=research_questions or [
+        research_questions=research_questions
+        or [
             "How do patients experience healthcare services?",
             "What factors influence patient satisfaction?",
             "How do patients navigate the healthcare system?",
