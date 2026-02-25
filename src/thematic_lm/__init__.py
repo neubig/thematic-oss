@@ -20,6 +20,18 @@ from thematic_lm.hermeneutics import (
     create_single_code_prompt,
     suggest_codebook_improvements,
 )
+from thematic_lm.hitl import (
+    AuditTrail,
+    AutomationLevel,
+    HITLConfig,
+    HITLController,
+    Intervention,
+    InterventionStage,
+    InterventionType,
+    ReviewCheckpoint,
+    SeedInput,
+    create_seed_input,
+)
 from thematic_lm.identity import (
     CONSERVATIVE_VIEW,
     HUMAN_DRIVEN_CLIMATE,
@@ -118,4 +130,15 @@ __all__ = [
     "create_domain_expert_persona",
     "load_document_from_text",
     "load_document_from_file",
+    # Human-in-the-Loop (HITL) system
+    "HITLController",
+    "HITLConfig",
+    "AutomationLevel",
+    "InterventionStage",
+    "InterventionType",
+    "Intervention",
+    "AuditTrail",
+    "ReviewCheckpoint",
+    "SeedInput",
+    "create_seed_input",
 ]
