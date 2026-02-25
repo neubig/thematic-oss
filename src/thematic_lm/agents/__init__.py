@@ -14,6 +14,12 @@ from thematic_lm.agents.reviewer import (
     ReviewerConfig,
     ReviewResult,
 )
+from thematic_lm.agents.theme_aggregator import (
+    MergedTheme,
+    ThemeAggregationResult,
+    ThemeAggregatorAgent,
+    ThemeAggregatorConfig,
+)
 from thematic_lm.agents.theme_coder import (
     Theme,
     ThemeCoderAgent,
@@ -40,4 +46,8 @@ __all__ = [
     "ThemeCoderConfig",
     "Theme",
     "ThemeResult",
+    "ThemeAggregatorAgent",
+    "ThemeAggregatorConfig",
+    "ThemeAggregationResult",
+    "MergedTheme",
 ]
