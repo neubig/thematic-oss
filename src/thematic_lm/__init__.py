@@ -4,6 +4,22 @@ Thematic-LM: A LLM-based Multi-agent System for Large-scale Thematic Analysis
 An open-source implementation of the Thematic-LM paper using the OpenHands SDK.
 """
 
+from thematic_lm.hermeneutics import (
+    CHAIN_OF_THOUGHT_TEMPLATE,
+    ONE_CODE_PER_PROMPT_TEMPLATE,
+    RATIONALE_TEMPLATE,
+    AdaptedCodebook,
+    CodeDefinition,
+    CodingRationale,
+    DirectiveType,
+    RationaleAnalysis,
+    ScopeType,
+    analyze_rationales,
+    create_climate_adapted_codebook,
+    create_cot_prompt,
+    create_single_code_prompt,
+    suggest_codebook_improvements,
+)
 from thematic_lm.identity import (
     CONSERVATIVE_VIEW,
     HUMAN_DRIVEN_CLIMATE,
@@ -68,4 +84,19 @@ __all__ = [
     "CODE_6RS",
     "THEME_DEVELOPMENT_GUIDANCE",
     "CONCEPTUALIZATION_GUIDANCE",
+    # Hermeneutics (Dunivin 2025)
+    "CodeDefinition",
+    "AdaptedCodebook",
+    "ScopeType",
+    "DirectiveType",
+    "CodingRationale",
+    "RationaleAnalysis",
+    "create_cot_prompt",
+    "create_single_code_prompt",
+    "analyze_rationales",
+    "suggest_codebook_improvements",
+    "create_climate_adapted_codebook",
+    "CHAIN_OF_THOUGHT_TEMPLATE",
+    "RATIONALE_TEMPLATE",
+    "ONE_CODE_PER_PROMPT_TEMPLATE",
 ]
