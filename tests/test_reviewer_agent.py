@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from thematic_lm.agents import (
+from thematic_analysis.agents import (
     AggregationResult,
     MergedCode,
     ReviewDecision,
@@ -13,7 +13,7 @@ from thematic_lm.agents import (
     ReviewerConfig,
     ReviewResult,
 )
-from thematic_lm.codebook import Codebook, Quote
+from thematic_analysis.codebook import Codebook, Quote
 
 
 class TestReviewerConfig:

@@ -4,9 +4,9 @@ import json
 import re
 from dataclasses import dataclass, field
 
-from thematic_lm.agents.base import AgentConfig, BaseAgent
-from thematic_lm.agents.theme_coder import Theme, ThemeResult
-from thematic_lm.codebook import EmbeddingService, Quote
+from thematic_analysis.agents.base import AgentConfig, BaseAgent
+from thematic_analysis.agents.theme_coder import Theme, ThemeResult
+from thematic_analysis.codebook import EmbeddingService, Quote
 
 
 @dataclass

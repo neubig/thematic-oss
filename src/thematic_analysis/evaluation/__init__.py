@@ -5,14 +5,14 @@ qualitative research: credibility, confirmability, dependability, and
 transferability.
 """
 
-from thematic_lm.evaluation.credibility import (
+from thematic_analysis.evaluation.credibility import (
     CredibilityConfig,
     CredibilityResult,
     EvaluatorAgent,
     QuoteConsistency,
     ThemeConsistency,
 )
-from thematic_lm.evaluation.dependability import (
+from thematic_analysis.evaluation.dependability import (
     DependabilityEvaluator,
     DependabilityResult,
     PairwiseComparison,
@@ -20,7 +20,7 @@ from thematic_lm.evaluation.dependability import (
     rouge_n,
     rouge_n_directional,
 )
-from thematic_lm.evaluation.transferability import (
+from thematic_analysis.evaluation.transferability import (
     TransferabilityEvaluator,
     TransferabilityResult,
     split_dataset,

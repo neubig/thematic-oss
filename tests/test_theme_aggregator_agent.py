@@ -5,14 +5,14 @@ from unittest.mock import patch
 
 import pytest
 
-from thematic_lm.agents.theme_aggregator import (
+from thematic_analysis.agents.theme_aggregator import (
     MergedTheme,
     ThemeAggregationResult,
     ThemeAggregatorAgent,
     ThemeAggregatorConfig,
 )
-from thematic_lm.agents.theme_coder import Theme, ThemeResult
-from thematic_lm.codebook import EmbeddingService, Quote
+from thematic_analysis.agents.theme_coder import Theme, ThemeResult
+from thematic_analysis.codebook import EmbeddingService, Quote
 
 
 class TestThemeAggregatorConfig:

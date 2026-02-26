@@ -4,10 +4,10 @@ import json
 import re
 from dataclasses import dataclass
 
-from thematic_lm.agents.base import AgentConfig, BaseAgent
-from thematic_lm.agents.coder import CodeAssignment
-from thematic_lm.codebook import Codebook, Quote
-from thematic_lm.iterative import NegotiationStrategy, negotiate
+from thematic_analysis.agents.base import AgentConfig, BaseAgent
+from thematic_analysis.agents.coder import CodeAssignment
+from thematic_analysis.codebook import Codebook, Quote
+from thematic_analysis.iterative import NegotiationStrategy, negotiate
 
 
 @dataclass
@@ -143,7 +143,7 @@ class CodeAggregatorAgent(BaseAgent):
         """
         super().__init__(config or AggregatorConfig())
         self.aggregator_config: AggregatorConfig = self.config  # type: ignore
-        self.codebook = codebook or Codebook()
+        self.codebook = codebook if codebook is not None else Codebook()
 
     def get_system_prompt(self) -> str:
         """Get the system prompt for aggregation."""

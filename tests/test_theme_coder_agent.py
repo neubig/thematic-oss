@@ -5,9 +5,14 @@ from unittest.mock import patch
 
 import pytest
 
-from thematic_lm.agents import Theme, ThemeCoderAgent, ThemeCoderConfig, ThemeResult
-from thematic_lm.codebook import Codebook, Quote
-from thematic_lm.research_context import (
+from thematic_analysis.agents import (
+    Theme,
+    ThemeCoderAgent,
+    ThemeCoderConfig,
+    ThemeResult,
+)
+from thematic_analysis.codebook import Codebook, Quote
+from thematic_analysis.research_context import (
     ResearchContext,
     create_climate_research_context,
 )

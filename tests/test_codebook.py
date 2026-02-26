@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from thematic_lm.codebook import Codebook, CodeEntry, Quote
+from thematic_analysis.codebook import Codebook, CodeEntry, Quote
 
 
 class TestQuote:

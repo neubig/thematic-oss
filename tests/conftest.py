@@ -2,7 +2,7 @@
 
 import pytest
 
-from thematic_lm.codebook import Codebook, EmbeddingService
+from thematic_analysis.codebook import Codebook, EmbeddingService
 
 
 def pytest_addoption(parser):

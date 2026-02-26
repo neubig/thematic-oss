@@ -1,6 +1,6 @@
 """Tests for Human-in-the-Loop (HITL) module."""
 
-from thematic_lm.hitl import (
+from thematic_analysis.hitl import (
     AuditTrail,
     AutomationLevel,
     HITLConfig,

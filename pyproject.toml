@@ -1,7 +1,7 @@
 [project]
-name = "thematic-oss"
+name = "thematic-analysis"
 version = "0.1.0"
-description = "Thematic-LM: A LLM-based Multi-agent System for Large-scale Thematic Analysis"
+description = "LLM-powered thematic analysis of qualitative data"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
@@ -11,11 +11,12 @@ dependencies = [
     "sentence-transformers>=3.0.0",
     "numpy>=1.26.0",
     "rouge-score>=0.1.2",
+    "pymupdf>=1.24.0",
 ]
 
 [project.urls]
-Source = "https://github.com/OpenHands/thematic-oss"
-Homepage = "https://github.com/OpenHands/thematic-oss"
+Source = "https://github.com/neubig/thematic-analysis"
+Homepage = "https://github.com/neubig/thematic-analysis"
 
 [project.optional-dependencies]
 dev = [
@@ -33,7 +34,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["thematic_lm*"]
+include = ["thematic_analysis*"]
 
 [tool.setuptools.package-data]
 "*" = ["py.typed"]
@@ -61,7 +62,7 @@ extend-select = ["B006", "B008", "B039", "RUF012"]
 "tests/**/*.py" = ["ARG"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["thematic_lm"]
+known-first-party = ["thematic_analysis"]
 combine-as-imports = true
 force-single-line = false
 lines-after-imports = 2

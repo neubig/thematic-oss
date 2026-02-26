@@ -10,7 +10,7 @@ Based on Section 3.1 of the Thematic-LM paper (WWW '25).
 import json
 from dataclasses import dataclass, field
 
-from thematic_lm.agents.base import AgentConfig, BaseAgent
+from thematic_analysis.agents.base import AgentConfig, BaseAgent
 
 
 @dataclass

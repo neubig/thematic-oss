@@ -2,7 +2,7 @@
 
 import pytest
 
-from thematic_lm.evaluation import (
+from thematic_analysis.evaluation import (
     TransferabilityEvaluator,
     TransferabilityResult,
     split_dataset,

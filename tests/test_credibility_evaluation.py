@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from thematic_lm.evaluation import (
+from thematic_analysis.evaluation import (
     CredibilityConfig,
     CredibilityResult,
     EvaluatorAgent,

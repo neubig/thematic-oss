@@ -1,6 +1,6 @@
 """Tests for research context module."""
 
-from thematic_lm.research_context import (
+from thematic_analysis.research_context import (
     CODE_6RS,
     CONCEPTUALIZATION_GUIDANCE,
     KEYWORD_6RS,

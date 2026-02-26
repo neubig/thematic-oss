@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 from numpy.typing import NDArray
 
-from thematic_lm.codebook.embeddings import EmbeddingService
+from thematic_analysis.codebook.embeddings import EmbeddingService
 
 
 @dataclass

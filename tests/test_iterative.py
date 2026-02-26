@@ -1,6 +1,6 @@
 """Tests for iterative pipeline module."""
 
-from thematic_lm.iterative import (
+from thematic_analysis.iterative import (
     IterationMetrics,
     IterationMode,
     IterationState,
