@@ -5,14 +5,14 @@ from unittest.mock import patch
 
 import pytest
 
-from thematic_lm.agents import (
+from thematic_analysis.agents import (
     AggregationResult,
     AggregatorConfig,
     CodeAggregatorAgent,
     CodeAssignment,
     MergedCode,
 )
-from thematic_lm.codebook import Codebook, Quote
+from thematic_analysis.codebook import Codebook, Quote
 
 
 class TestAggregatorConfig:

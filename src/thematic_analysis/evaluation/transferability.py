@@ -10,7 +10,7 @@ Based on Section 3.1 of the Thematic-LM paper (WWW '25).
 import random
 from dataclasses import dataclass, field
 
-from thematic_lm.evaluation.dependability import rouge_combined, rouge_n
+from thematic_analysis.evaluation.dependability import rouge_combined, rouge_n
 
 
 def split_dataset[T](

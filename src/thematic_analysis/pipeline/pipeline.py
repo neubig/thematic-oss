@@ -17,7 +17,7 @@ import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 
-from thematic_lm.agents import (
+from thematic_analysis.agents import (
     AggregationResult,
     AggregatorConfig,
     CodeAggregatorAgent,
@@ -33,8 +33,8 @@ from thematic_lm.agents import (
     ThemeCoderConfig,
     ThemeResult,
 )
-from thematic_lm.codebook import Codebook, EmbeddingService
-from thematic_lm.iterative import (
+from thematic_analysis.codebook import Codebook, EmbeddingService
+from thematic_analysis.iterative import (
     IterationMetrics,
     IterativePipelineConfig,
     IterativePipelineController,
@@ -549,7 +549,7 @@ class ThematicLMPipeline:
             return eval_result
 
         if eval_config.evaluate_credibility:
-            from thematic_lm.evaluation.credibility import (
+            from thematic_analysis.evaluation.credibility import (
                 CredibilityConfig,
                 EvaluatorAgent,
             )
@@ -649,6 +649,85 @@ class ThematicLMPipeline:
             )
             for text in texts
         ]
+        return self.run(segments)
+
+    def run_from_directory(
+        self,
+        directory: str,
+        pattern: str = "*.pdf",
+        segmentation: str = "paragraph",
+        min_words: int = 20,
+        max_words: int = 500,
+        recursive: bool = False,
+    ) -> PipelineResult:
+        """Run pipeline on all documents in a directory.
+
+        Supports PDF, TXT, and MD files. Documents are loaded and segmented
+        automatically for thematic analysis.
+
+        Args:
+            directory: Path to directory containing documents.
+            pattern: Glob pattern for files (default: "*.pdf").
+            segmentation: Method to split docs ('paragraph', 'sentence', 'fixed').
+            min_words: Minimum words per segment.
+            max_words: Maximum words per segment (for 'fixed' method).
+            recursive: Whether to search subdirectories.
+
+        Returns:
+            PipelineResult with themes and codebook.
+
+        Example:
+            >>> pipeline = ThematicLMPipeline()
+            >>> result = pipeline.run_from_directory("/path/to/pdfs")
+            >>> print(result.themes)
+        """
+        from thematic_analysis.loaders import documents_to_segments, load_directory
+
+        print(f"Loading documents from {directory} (pattern: {pattern})...")
+        documents = load_directory(directory, pattern=pattern, recursive=recursive)
+        print(f"Loaded {len(documents)} documents")
+
+        for doc in documents:
+            print(f"  - {doc.metadata.filename}: {doc.metadata.word_count} words")
+
+        print(f"\nSegmenting documents (method: {segmentation})...")
+        segments = documents_to_segments(
+            documents,
+            method=segmentation,
+            min_words=min_words,
+            max_words=max_words,
+        )
+        print(f"Created {len(segments)} segments for analysis")
+
+        return self.run(segments)
+
+    def run_from_pdf(
+        self,
+        path: str,
+        segmentation: str = "paragraph",
+        min_words: int = 20,
+    ) -> PipelineResult:
+        """Run pipeline on a single PDF file.
+
+        Args:
+            path: Path to PDF file.
+            segmentation: Method to split doc ('paragraph', 'sentence', 'fixed').
+            min_words: Minimum words per segment.
+
+        Returns:
+            PipelineResult with themes and codebook.
+        """
+        from thematic_analysis.loaders import load_pdf
+
+        print(f"Loading PDF: {path}")
+        doc = load_pdf(path)
+        words = doc.metadata.word_count
+        pages = doc.metadata.page_count
+        print(f"Loaded {words} words from {pages} pages")
+
+        segments = doc.segment(method=segmentation, min_words=min_words)
+        print(f"Created {len(segments)} segments for analysis")
+
         return self.run(segments)
 
     @property

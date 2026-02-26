@@ -2,7 +2,7 @@
 
 import pytest
 
-from thematic_lm.identity import (
+from thematic_analysis.identity import (
     CONSERVATIVE_VIEW,
     HUMAN_DRIVEN_CLIMATE,
     INDIGENOUS_VIEW,
@@ -170,7 +170,7 @@ class TestIdentityIntegration:
 
     def test_identity_can_be_used_as_coder_identity(self):
         """Test that identity description can be used with CoderConfig."""
-        from thematic_lm.agents import CoderConfig
+        from thematic_analysis.agents import CoderConfig
 
         identity = get_identity("progressive_view")
         config = CoderConfig(identity=str(identity))
@@ -180,7 +180,7 @@ class TestIdentityIntegration:
 
     def test_diverse_identities_create_unique_configs(self):
         """Test that diverse identities create distinct configurations."""
-        from thematic_lm.agents import CoderConfig
+        from thematic_analysis.agents import CoderConfig
 
         configs = []
         for identity in get_diverse_identities():
@@ -193,14 +193,14 @@ class TestIdentityIntegration:
 
     def test_identity_integration_with_theme_coder(self):
         """Test that identity works with ThemeCoderConfig."""
-        from thematic_lm.agents import ThemeCoderConfig
-        from thematic_lm.codebook import Codebook
+        from thematic_analysis.agents import ThemeCoderConfig
+        from thematic_analysis.codebook import Codebook
 
         identity = get_identity("indigenous_view")
         config = ThemeCoderConfig(identity=str(identity))
         codebook = Codebook(use_mock_embeddings=True)
 
-        from thematic_lm.agents import ThemeCoderAgent
+        from thematic_analysis.agents import ThemeCoderAgent
 
         agent = ThemeCoderAgent(config=config, codebook=codebook)
 

@@ -5,13 +5,18 @@ from unittest.mock import patch
 
 import pytest
 
-from thematic_lm import DataSegment, PipelineConfig, PipelineResult, ThematicLMPipeline
-from thematic_lm.agents import (
+from thematic_analysis import (
+    DataSegment,
+    PipelineConfig,
+    PipelineResult,
+    ThematicLMPipeline,
+)
+from thematic_analysis.agents import (
     ThemeAggregationResult,
 )
-from thematic_lm.agents.theme_aggregator import MergedTheme
-from thematic_lm.codebook import Codebook, EmbeddingService, Quote
-from thematic_lm.pipeline import ExecutionMode
+from thematic_analysis.agents.theme_aggregator import MergedTheme
+from thematic_analysis.codebook import Codebook, EmbeddingService, Quote
+from thematic_analysis.pipeline import ExecutionMode
 
 
 class TestPipelineConfig:
@@ -221,7 +226,7 @@ class TestThematicLMPipeline:
 }
 ```"""
 
-        with patch("thematic_lm.agents.base.BaseAgent._call_llm") as mock_llm:
+        with patch("thematic_analysis.agents.base.BaseAgent._call_llm") as mock_llm:
             mock_llm.side_effect = [
                 mock_coder_response,
                 mock_coder_response,
@@ -259,7 +264,7 @@ class TestThematicLMPipeline:
 }
 ```"""
 
-        with patch("thematic_lm.agents.base.BaseAgent._call_llm") as mock_llm:
+        with patch("thematic_analysis.agents.base.BaseAgent._call_llm") as mock_llm:
             mock_llm.side_effect = [
                 mock_theme_coder_response,
                 mock_theme_coder_response,
@@ -312,7 +317,7 @@ class TestThematicLMPipeline:
 {"merge_groups": [], "retain_themes": ["Academic Stress"]}
 ```"""
 
-        with patch("thematic_lm.agents.base.BaseAgent._call_llm") as mock_llm:
+        with patch("thematic_analysis.agents.base.BaseAgent._call_llm") as mock_llm:
             mock_llm.side_effect = [
                 mock_coder_response,
                 mock_coder_response,
@@ -353,7 +358,7 @@ class TestThematicLMPipeline:
 {"merge_groups": [], "retain_themes": ["Test"]}
 ```"""
 
-        with patch("thematic_lm.agents.base.BaseAgent._call_llm") as mock_llm:
+        with patch("thematic_analysis.agents.base.BaseAgent._call_llm") as mock_llm:
             # 2 texts * 2 coders = 4 coder calls, plus aggregator, reviewer
             # per segment, then theme coders and aggregator
             mock_llm.side_effect = [
@@ -398,7 +403,7 @@ class TestThematicLMPipeline:
 {"decision": "add_new"}
 ```"""
 
-        with patch("thematic_lm.agents.base.BaseAgent._call_llm") as mock_llm:
+        with patch("thematic_analysis.agents.base.BaseAgent._call_llm") as mock_llm:
             mock_llm.side_effect = [
                 mock_coder_response,
                 mock_aggregator_response,
@@ -458,7 +463,7 @@ class TestPipelineIntegration:
 {"merge_groups": [], "retain_themes": ["Stress"]}
 ```"""
 
-        with patch("thematic_lm.agents.base.BaseAgent._call_llm") as mock_llm:
+        with patch("thematic_analysis.agents.base.BaseAgent._call_llm") as mock_llm:
             mock_llm.side_effect = [
                 mock_coder_response,
                 mock_aggregator_response,
@@ -517,7 +522,7 @@ class TestPipelineIntegration:
 {"merge_groups": [], "retain_themes": ["Test Theme"]}
 ```"""
 
-        with patch("thematic_lm.agents.base.BaseAgent._call_llm") as mock_llm:
+        with patch("thematic_analysis.agents.base.BaseAgent._call_llm") as mock_llm:
             mock_llm.side_effect = [
                 mock_coder_response,
                 mock_aggregator_response,

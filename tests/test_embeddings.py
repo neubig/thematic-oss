@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from thematic_lm.codebook.embeddings import EmbeddingService, MockEmbeddingService
+from thematic_analysis.codebook.embeddings import EmbeddingService, MockEmbeddingService
 
 
 class TestMockEmbeddingService:

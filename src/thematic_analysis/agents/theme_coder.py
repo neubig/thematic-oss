@@ -7,12 +7,12 @@ import re
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from thematic_lm.agents.base import AgentConfig, BaseAgent
-from thematic_lm.codebook import Codebook, Quote
+from thematic_analysis.agents.base import AgentConfig, BaseAgent
+from thematic_analysis.codebook import Codebook, Quote
 
 
 if TYPE_CHECKING:
-    from thematic_lm.research_context import ResearchContext
+    from thematic_analysis.research_context import ResearchContext
 
 
 @dataclass
@@ -145,7 +145,7 @@ class ThemeCoderAgent(BaseAgent):
         """
         super().__init__(config or ThemeCoderConfig())
         self.theme_config: ThemeCoderConfig = self.config  # type: ignore
-        self.codebook = codebook or Codebook()
+        self.codebook = codebook if codebook is not None else Codebook()
         self.research_context = research_context
 
     def set_research_context(self, context: ResearchContext) -> None:

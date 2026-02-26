@@ -4,7 +4,7 @@ Thematic-LM: A LLM-based Multi-agent System for Large-scale Thematic Analysis
 An open-source implementation of the Thematic-LM paper using the OpenHands SDK.
 """
 
-from thematic_lm.hermeneutics import (
+from thematic_analysis.hermeneutics import (
     CHAIN_OF_THOUGHT_TEMPLATE,
     ONE_CODE_PER_PROMPT_TEMPLATE,
     RATIONALE_TEMPLATE,
@@ -20,7 +20,7 @@ from thematic_lm.hermeneutics import (
     create_single_code_prompt,
     suggest_codebook_improvements,
 )
-from thematic_lm.hitl import (
+from thematic_analysis.hitl import (
     AuditTrail,
     AutomationLevel,
     HITLConfig,
@@ -32,7 +32,7 @@ from thematic_lm.hitl import (
     SeedInput,
     create_seed_input,
 )
-from thematic_lm.identity import (
+from thematic_analysis.identity import (
     CONSERVATIVE_VIEW,
     HUMAN_DRIVEN_CLIMATE,
     INDIGENOUS_VIEW,
@@ -45,7 +45,16 @@ from thematic_lm.identity import (
     get_identity,
     list_identities,
 )
-from thematic_lm.persona import (
+from thematic_analysis.loaders import (
+    DocumentMetadata,
+    LoadedDocument,
+    documents_to_segments,
+    load_directory,
+    load_document,
+    load_pdf,
+    load_text_file,
+)
+from thematic_analysis.persona import (
     ContextDocument,
     ContextType,
     PersonaContext,
@@ -55,13 +64,13 @@ from thematic_lm.persona import (
     load_document_from_file,
     load_document_from_text,
 )
-from thematic_lm.pipeline import (
+from thematic_analysis.pipeline import (
     DataSegment,
     PipelineConfig,
     PipelineResult,
     ThematicLMPipeline,
 )
-from thematic_lm.prompts import (
+from thematic_analysis.prompts import (
     AggregatorPrompts,
     CoderPrompts,
     PromptConfig,
@@ -71,7 +80,7 @@ from thematic_lm.prompts import (
     create_domain_prompts,
     get_prompt_config,
 )
-from thematic_lm.research_context import (
+from thematic_analysis.research_context import (
     CODE_6RS,
     CONCEPTUALIZATION_GUIDANCE,
     KEYWORD_6RS,
@@ -85,11 +94,16 @@ from thematic_lm.research_context import (
 )
 
 
+# Alias for cleaner API
+ThematicAnalysisPipeline = ThematicLMPipeline
+
+
 __version__ = "0.1.0"
 __all__ = [
     "__version__",
     # Pipeline
     "ThematicLMPipeline",
+    "ThematicAnalysisPipeline",  # Alias
     "PipelineConfig",
     "PipelineResult",
     "DataSegment",
@@ -160,4 +174,12 @@ __all__ = [
     "ThemeAggregatorPrompts",
     "get_prompt_config",
     "create_domain_prompts",
+    # Document loaders
+    "load_pdf",
+    "load_text_file",
+    "load_document",
+    "load_directory",
+    "documents_to_segments",
+    "LoadedDocument",
+    "DocumentMetadata",
 ]

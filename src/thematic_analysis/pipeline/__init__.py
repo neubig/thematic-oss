@@ -1,6 +1,6 @@
 """Pipeline module for thematic analysis orchestration."""
 
-from thematic_lm.pipeline.pipeline import (
+from thematic_analysis.pipeline.pipeline import (
     DataSegment,
     EvaluationConfig,
     EvaluationResult,

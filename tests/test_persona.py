@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from thematic_lm.persona import (
+from thematic_analysis.persona import (
     ContextDocument,
     ContextType,
     PersonaContext,

@@ -1,1 +1,1 @@
-"""Tests for thematic_lm package."""
+"""Tests for thematic_analysis package."""

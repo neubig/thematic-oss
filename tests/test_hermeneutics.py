@@ -1,6 +1,6 @@
 """Tests for hermeneutics module."""
 
-from thematic_lm.hermeneutics import (
+from thematic_analysis.hermeneutics import (
     CHAIN_OF_THOUGHT_TEMPLATE,
     ONE_CODE_PER_PROMPT_TEMPLATE,
     RATIONALE_TEMPLATE,

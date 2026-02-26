@@ -5,9 +5,9 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 
-from thematic_lm.agents.aggregator import AggregationResult
-from thematic_lm.agents.base import AgentConfig, BaseAgent
-from thematic_lm.codebook import Codebook, CodeEntry, Quote
+from thematic_analysis.agents.aggregator import AggregationResult
+from thematic_analysis.agents.base import AgentConfig, BaseAgent
+from thematic_analysis.codebook import Codebook, CodeEntry, Quote
 
 
 class ReviewDecision(Enum):
@@ -105,7 +105,7 @@ class ReviewerAgent(BaseAgent):
         """
         super().__init__(config or ReviewerConfig())
         self.reviewer_config: ReviewerConfig = self.config  # type: ignore
-        self.codebook = codebook or Codebook()
+        self.codebook = codebook if codebook is not None else Codebook()
 
     def get_system_prompt(self) -> str:
         """Get the system prompt for review."""

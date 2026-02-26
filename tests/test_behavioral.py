@@ -14,21 +14,21 @@ from unittest.mock import patch
 
 import pytest
 
-from thematic_lm import (
+from thematic_analysis import (
     DataSegment,
     PipelineConfig,
     ThematicLMPipeline,
 )
-from thematic_lm.agents import (
+from thematic_analysis.agents import (
     AggregatorConfig,
     CodeAggregatorAgent,
     CodeAssignment,
     CoderAgent,
     CoderConfig,
 )
-from thematic_lm.codebook import Codebook
-from thematic_lm.iterative import NegotiationStrategy
-from thematic_lm.pipeline import ExecutionMode
+from thematic_analysis.codebook import Codebook
+from thematic_analysis.iterative import NegotiationStrategy
+from thematic_analysis.pipeline import ExecutionMode
 
 
 class TestMultiCoderDisagreement:
@@ -179,7 +179,7 @@ class TestIndependentCodebooks:
         coder1, coder2 = pipeline._coders
 
         # Add a code to coder1's codebook
-        from thematic_lm.codebook import Quote
+        from thematic_analysis.codebook import Quote
 
         coder1.codebook.add_code("test_code", [Quote("q1", "quote text")])
 
@@ -220,7 +220,7 @@ class TestExecutionModes:
         )
         pipeline = ThematicLMPipeline(config=config)
 
-        with patch("thematic_lm.agents.base.BaseAgent._call_llm") as mock_llm:
+        with patch("thematic_analysis.agents.base.BaseAgent._call_llm") as mock_llm:
             mock_llm.side_effect = responses.copy()
             result = pipeline.run([segment])
 
@@ -251,7 +251,7 @@ class TestExecutionModes:
             '{"merge_groups": [], "retain_themes": ["T"]}',
         ]
 
-        with patch("thematic_lm.agents.base.BaseAgent._call_llm") as mock_llm:
+        with patch("thematic_analysis.agents.base.BaseAgent._call_llm") as mock_llm:
             mock_llm.side_effect = mock_responses
             result = pipeline.run([DataSegment("s1", "text")])
 
@@ -279,7 +279,7 @@ class TestEvaluationIntegration:
             '{"merge_groups": [], "retain_themes": ["T"]}',
         ]
 
-        with patch("thematic_lm.agents.base.BaseAgent._call_llm") as mock_llm:
+        with patch("thematic_analysis.agents.base.BaseAgent._call_llm") as mock_llm:
             mock_llm.side_effect = mock_responses
             result = pipeline.run([DataSegment("s1", "text")])
 
@@ -309,7 +309,7 @@ class TestEvaluationIntegration:
             '{"merge_groups": [], "retain_themes": ["T"]}',
         ]
 
-        with patch("thematic_lm.agents.base.BaseAgent._call_llm") as mock_llm:
+        with patch("thematic_analysis.agents.base.BaseAgent._call_llm") as mock_llm:
             mock_llm.side_effect = mock_responses
             result = pipeline.run([DataSegment("s1", "text")])
 
@@ -323,7 +323,7 @@ class TestConfigurablePrompts:
 
     def test_coder_with_custom_prompts(self):
         """Test that custom prompts are used when configured."""
-        from thematic_lm.prompts import CoderPrompts
+        from thematic_analysis.prompts import CoderPrompts
 
         custom_prompts = CoderPrompts(
             system_prompt="Custom system: {identity_section}",
@@ -346,7 +346,7 @@ class TestConfigurablePrompts:
 
     def test_domain_specific_prompts(self):
         """Test creation of domain-specific prompts."""
-        from thematic_lm.prompts import create_domain_prompts
+        from thematic_analysis.prompts import create_domain_prompts
 
         healthcare_prompts = create_domain_prompts(
             domain="healthcare",
@@ -363,7 +363,7 @@ class TestCodebookCopy:
 
     def test_codebook_copy_creates_independent_instance(self):
         """Test that copy creates a truly independent codebook."""
-        from thematic_lm.codebook import Quote
+        from thematic_analysis.codebook import Quote
 
         original = Codebook(use_mock_embeddings=True)
         original.add_code("code1", [Quote("q1", "text1")])

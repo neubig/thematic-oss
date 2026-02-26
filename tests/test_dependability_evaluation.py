@@ -2,7 +2,7 @@
 
 import pytest
 
-from thematic_lm.evaluation import (
+from thematic_analysis.evaluation import (
     DependabilityEvaluator,
     DependabilityResult,
     PairwiseComparison,

@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 
-from thematic_lm.identity import IdentityPerspective
+from thematic_analysis.identity import IdentityPerspective
 
 
 class ContextType(Enum):

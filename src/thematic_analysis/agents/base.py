@@ -15,6 +15,8 @@ class AgentConfig:
     temperature: float = 0.7
     max_tokens: int = 4096
     identity: str | None = None  # Optional identity/persona for the agent
+    api_key: str | None = None  # API key (falls back to LLM_API_KEY env var)
+    base_url: str | None = None  # Optional base URL for API
 
 
 class BaseAgent(ABC):
@@ -37,11 +39,13 @@ class BaseAgent(ABC):
     def llm(self) -> LLM:
         """Lazy load the LLM instance."""
         if self._llm is None:
-            self._llm = LLM(
-                model=self.config.model,
-                temperature=self.config.temperature,
-                max_output_tokens=self.config.max_tokens,
-            )
+            # Use SDK's load_from_env which handles OpenHands proxy correctly
+            self._llm = LLM.load_from_env()
+            # Override with config settings if specified
+            if self.config.temperature is not None:
+                self._llm.temperature = self.config.temperature
+            if self.config.max_tokens is not None:
+                self._llm.max_output_tokens = self.config.max_tokens
         return self._llm
 
     def _create_messages(self, system_prompt: str, user_prompt: str) -> list[Message]:
